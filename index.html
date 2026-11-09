@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Task and Study Planner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="authSection" class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <h1>Student Task and Study Planner</h1>
+        <p>Subject and Topic Study Timeline Management</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button id="loginTabBtn" class="tab-btn active" onclick="showAuthTab('login')">Sign In</button>
+        <button id="registerTabBtn" class="tab-btn" onclick="showAuthTab('register')">Register Student</button>
+      </div>
+
+      <div id="authMessage" class="alert-box hidden"></div>
+
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Student Roll No or Username</label>
+          <input type="text" id="loginUsername" placeholder="e.g. Nidhi123" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter password" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Access Study Dashboard</button>
+      </form>
+
+      <form id="registerForm" class="hidden" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label>Student Full Name</label>
+          <input type="text" id="regName" placeholder="e.g. Gaura Shakya" required>
+        </div>
+        <div class="form-group">
+          <label>Choose Username</label>
+          <input type="text" id="regUsername" placeholder="e.g. gaura123" required>
+        </div>
+        <div class="form-group">
+          <label>Program / Semester</label>
+          <input type="text" id="regCourse" placeholder="e.g. MCA 3rd Sem" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="regPassword" placeholder="Minimum 4 characters" required>
+        </div>
+        <button type="submit" class="btn btn-success btn-block">Complete Registration</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="dashboardSection" class="dashboard-wrapper hidden">
+    <header class="app-header">
+      <div class="header-left">
+        <h2>Student Task and Study Planner</h2>
+        <span class="role-badge">Academic Portal</span>
+      </div>
+
+      <div class="header-right">
+        <div class="user-chip">
+          <span id="userAvatar" class="avatar-circle">GS</span>
+          <div class="user-info">
+            <span id="userNameDisplay" class="user-name">Gaura Shakya</span>
+            <span id="userCourseDisplay" class="user-sub">MCA 3rd Sem</span>
+          </div>
+        </div>
+        <button class="btn btn-outline" onclick="logout()">Logout</button>
+      </div>
+    </header>
+
+    <main class="main-body">
+
+      <div id="priorityAlertSection" class="priority-alert-box hidden">
+        <div class="alert-title-row">
+          <span class="alert-badge">PRIORITY ALERT</span>
+          <strong id="alertHeadingText">Urgent Study Deadlines</strong>
+        </div>
+        <div id="priorityAlertList" class="alert-items-list"></div>
+      </div>
+
+      <section class="overview-strip">
+        <div class="metric-card">
+          <span class="metric-label">TOTAL ASSIGNED</span>
+          <span id="statTotal" class="metric-val">0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">COMPLETED</span>
+          <span id="statCompleted" class="metric-val text-success">0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">IN PROGRESS</span>
+          <span id="statProgress" class="metric-val text-warning">0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">PENDING</span>
+          <span id="statPending" class="metric-val text-danger">0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">TOTAL HOURS</span>
+          <span id="statHours" class="metric-val">0</span>
+        </div>
+      </section>
+
+      <section class="subject-hub-section">
+        <div class="section-top-bar">
+          <div>
+            <h3>Subject Workload and Till Date Status</h3>
+            <span class="caption">Manage your courses, view deadlines, and add new subjects</span>
+          </div>
+          <button class="btn btn-primary" onclick="openSubjectModal()">+ Add New Subject</button>
+        </div>
+        <div id="subjectCardsGrid" class="subject-cards-grid"></div>
+      </section>
+
+      <section class="progress-section">
+        <div class="progress-header">
+          <span>Overall Study Plan Completion</span>
+          <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-track">
+          <div id="progressBar" class="progress-fill"></div>
+        </div>
+      </section>
+
+      <div class="workspace-grid">
+        
+        <div class="form-panel">
+          <div class="panel-header">
+            <h3 id="formHeading">Add What To Study in Subject</h3>
+            <span class="panel-caption">Select particular subject, what to learn, and till which date</span>
+          </div>
+
+          <form id="studyForm" onsubmit="saveStudyItem(event)">
+            <input type="hidden" id="editItemId">
+
+            <div class="form-group">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label style="margin-bottom:0;">Select Particular Subject *</label>
+                <button type="button" class="btn-link" onclick="openSubjectModal()">+ Add Subject</button>
+              </div>
+              <select id="taskSubject" required></select>
+            </div>
+
+            <div class="form-group">
+              <label>What I Want To Learn / Study Topic *</label>
+              <textarea id="taskTitle" rows="3" placeholder="e.g. Master CSS Grid layout, Flexbox properties, and write Bash shell automation scripts" required></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Till Which Date (Deadline) *</label>
+                <input type="date" id="taskDueDate" required>
+              </div>
+              <div class="form-group">
+                <label>Est. Hours *</label>
+                <input type="number" id="taskHours" min="0.5" step="0.5" value="2.0" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Priority Alert Level</label>
+                <select id="taskPriority">
+                  <option value="High" selected>High Priority (Study First - Urgent Alert)</option>
+                  <option value="Medium">Medium Priority</option>
+                  <option value="Low">Low Priority</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Workflow Status</label>
+                <select id="taskStatus">
+                  <option value="Pending" selected>Pending</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Study Notes / References (Optional)</label>
+              <input type="text" id="taskNotes" placeholder="Textbook unit, question numbers, reference links...">
+            </div>
+
+            <div class="action-row">
+              <button type="submit" id="saveTaskBtn" class="btn btn-primary btn-block">Add To Study List</button>
+              <button type="button" id="cancelEditBtn" class="btn btn-secondary btn-block hidden" onclick="cancelEdit()">Cancel Edit</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="list-panel">
+          <div class="toolbar">
+            <div class="search-box">
+              <input type="text" id="searchInput" placeholder="Search tasks or subjects..." oninput="displayTasks()">
+            </div>
+
+            <div class="filters-box">
+              <select id="filterSubject" onchange="displayTasks()"></select>
+
+              <select id="filterStatus" onchange="displayTasks()">
+                <option value="all">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+              </select>
+
+              <select id="filterPriority" onchange="displayTasks()">
+                <option value="all">All Priorities</option>
+                <option value="High">High Priority Only</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+
+              <select id="sortBy" onchange="displayTasks()">
+                <option value="studyFirst">Study Order: What To Study First</option>
+                <option value="dateAsc">Till Date: Earliest</option>
+                <option value="dateDesc">Till Date: Latest</option>
+                <option value="priority">Priority: High to Low</option>
+                <option value="hours">Hours: High to Low</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="list-actions-bar">
+            <span id="taskCountStatus" class="task-count">Showing 0 tasks</span>
+            <div class="bulk-actions">
+              <button class="btn btn-sm btn-outline" onclick="resetDefaultStudyPlan()">Reset Demo Tasks</button>
+              <button class="btn btn-sm btn-outline" onclick="exportDataJSON()">Export JSON</button>
+              <button class="btn btn-sm btn-outline text-danger" onclick="clearCompleted()">Clear Completed</button>
+            </div>
+          </div>
+
+          <div id="taskList" class="tasks-container"></div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <div id="subjectModal" class="modal-backdrop hidden">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3>Add New Subject</h3>
+          <button type="button" class="btn btn-sm btn-outline" onclick="closeSubjectModal()">Close</button>
+        </div>
+        <form id="newSubjectForm" onsubmit="handleAddNewSubject(event)">
+          <div class="form-group">
+            <label>Subject Code and Course Name *</label>
+            <input type="text" id="newSubjectInput" placeholder="e.g. CAP780 Mobile Application Development" required>
+          </div>
+          <div class="action-row">
+            <button type="submit" class="btn btn-primary btn-block">Save and Add Subject</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <footer class="app-footer">
+      <span>Student Task and Study Planner | MCA Continuous Assessment Project | Vanilla JavaScript Architecture</span>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
